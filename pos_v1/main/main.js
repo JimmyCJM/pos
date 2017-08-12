@@ -1,4 +1,7 @@
 'use strict';
+
+
+
 function printReceipt(tags) {
   var Items = loadAllItems();   //loadAllItems
 
@@ -8,22 +11,33 @@ function printReceipt(tags) {
   var tCount = new Array();
   for (let i=0;i<tags.length;i++){
     if (tags[i].length > 10){
-      newTags.push({tag:tags[i].split("-")[0] , count:parseFloat(tags[i].split("-")[1])}) ;
+      newTags.push({tag:tags[i].split(/[-:]/)[0] , count:parseFloat(tags[i].split(/[-:]/)[1])}) ;
     }
     else {
       newTags.push({tag:tags[i] , count:1});
     }
   }
-  newTags.push({tag:0 , count:0});
+  var deletIndex = new Array();
+  for (let i=0;i<newTags.length;i++){
+    for (let j=i+1;j<newTags.length;j++){
+      if(newTags[i].tag === newTags[j].tag) {
+        newTags[i].count += newTags[j].count;
+        deletIndex.push(j);
+      }
+    }
+  }
+  var delet = [];
+  deletIndex.map(value => {
+    if (delet.indexOf(value) !== -1);
+    else delet.push(value);
+  })
 
-  for (let i=0;i<newTags.length - 1;i++){
-    if (newTags[i].tag == newTags[i+1].tag){
-      count ++;
-    }
-    else {
-      tCount.push({barcode:newTags[i].tag , count:newTags[i].count + count - 1});
-      count = 1;
-    }
+  for (let i=delet.length;i>0;i--){
+    newTags.splice(delet[i-1],1);
+  }
+
+  for(let i =0;i<newTags.length;i++){
+    tCount.push({barcode:newTags[i].tag, count:newTags[i].count});
   }
 
   var promotionIfo = loadPromotions();    //loadPromotions
@@ -45,12 +59,14 @@ function printReceipt(tags) {
 
   //summation
   var sum = new Array();
-  for (let i=0;i<Items.length;i++){
-    for (let j=0;j<pCount.length;j++){
-      if (pCount[j].barcode == Items[i].barcode){
-        sum.push({barcode:pCount[j].barcode , name:Items[i].name , unit:Items[i].unit ,
-        price:Items[i].price , count:pCount[j].count , newCount:pCount[j].newCount ,
-        discount:Items[i].price * (pCount[j].count - pCount[j].newCount)});
+  for (let i = 0; i < pCount.length; i++) {
+    for (let j = 0; j < Items.length; j++) {
+      if (pCount[i].barcode == Items[j].barcode) {
+        sum.push({
+          barcode: pCount[i].barcode, name: Items[j].name, unit: Items[j].unit,
+          price: Items[j].price, count: pCount[i].count, newCount: pCount[i].newCount,
+          discount: Items[j].price * (pCount[i].count - pCount[i].newCount)
+        });
       }
     }
   }
@@ -66,12 +82,18 @@ function printReceipt(tags) {
   for (let i=0;i<tPrice.length;i++){
     totalPrice += tPrice[i];
   }
-  console.log('***<没钱赚商店>收据***'+
-    '\n名称：' + sum[0].name + '，数量：'+ sum[0].count + sum[0].unit + '，单价：' + sum[0].price.toFixed(2) +'(元)，小计：'+ tPrice[0].toFixed(2)+'(元)' +
-    '\n名称：' + sum[1].name +'，数量：'+ sum[1].count + sum[1].unit + '，单价：' + sum[1].price.toFixed(2) +'(元)，小计：'+ tPrice[1].toFixed(2)+'(元)' +
-    '\n名称：' + sum[2].name +'，数量：'+ sum[2].count + sum[2].unit + '，单价：'+ sum[2].price.toFixed(2) +'(元)，小计：'+ tPrice[2].toFixed(2)+'(元)' +
-    '\n----------------------' +
-    '\n总计：'+ totalPrice.toFixed(2) +'(元)' +
-    '\n节省：' + totalDiscount.toFixed(2) + '(元)'+
-    '\n**********************')  ;
+  var printIfo = 0;
+  printIfo =`***<没钱赚商店>收据***`;
+  sum.map((value, index) => {
+    printIfo += `\n名称：${value.name}，数量：${value.count + value.unit}，单价：${value.price.toFixed(2)}(元)，小计：${tPrice[index].toFixed(2)}(元)`;
+  })
+  printIfo += `\n----------------------
+总计：${totalPrice.toFixed(2)}(元)
+节省：${totalDiscount.toFixed(2)}(元)
+**********************`
+  console.log(printIfo)  ;
 }
+
+
+
+

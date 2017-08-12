@@ -1,9 +1,4 @@
 'use strict';
-let Item = require("./model/item.js");
-let Promotion = require("./model/promotion.js");
-let Tcount = require("./model/tcount.js");
-let Sum = require("./model/sum.js");
-let Order = require("./model/print.js");
 
 
 
@@ -50,5 +45,3 @@ function printReceipt(tags) {
   var printIfo = Order.print(result);
   console.log(printIfo);
 }
-
-module.exports = printReceipt;
